@@ -90,69 +90,66 @@
     pointer-events: none;
   }
 
-  .planet-tap {
+  .planet-marker {
     position: absolute;
     display: flex; flex-direction: column; align-items: center;
-    cursor: pointer; z-index: 12;
     transform: translate(-50%, -50%);
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .planet-tap::before {
-    content: '';
-    position: absolute;
-    width: 44px; height: 44px;
-    border-radius: 50%;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
+    pointer-events: none;
   }
 
   .planet-dot {
     border-radius: 50%;
-    pointer-events: none;
-    transition: transform 0.2s, box-shadow 0.2s;
   }
 
-  .planet-tap:active .planet-dot { transform: scale(1.5); }
-
-  .planet-tap.selected .planet-dot {
-    box-shadow: 0 0 14px 5px var(--accent);
-    transform: scale(1.4);
-  }
-
-  .planet-name {
-    font-size: 0.6rem; font-weight: 600;
+  .planet-label {
+    font-size: 0.55rem; font-weight: 600;
     color: var(--text-dim);
-    margin-top: 4px;
+    margin-top: 3px;
     white-space: nowrap;
-    pointer-events: none;
-    transition: color 0.2s;
   }
 
-  .planet-tap.selected .planet-name { color: var(--text); }
-
-  .planet-list {
-    display: flex; flex-wrap: wrap; justify-content: center;
-    gap: 6px; margin-top: 16px; padding: 0 8px;
+  .planet-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+    width: 100%;
   }
 
-  .planet-chip {
-    display: flex; align-items: center; gap: 6px;
+  .planet-btn {
+    display: flex; align-items: center; gap: 12px;
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 20px; padding: 8px 14px;
-    cursor: pointer; transition: all 0.2s;
+    border-radius: 14px; padding: 14px 16px;
+    color: var(--text); font-family: inherit;
+    font-size: 0.85rem; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+    -webkit-appearance: none;
+    touch-action: manipulation;
   }
 
-  .planet-chip:active { transform: scale(0.95); }
-  .planet-chip.selected { border-color: var(--accent); background: var(--glow); }
+  .planet-btn:active { transform: scale(0.96); background: var(--glow); }
+  .planet-btn.selected { border-color: var(--accent); background: var(--glow); }
 
-  .planet-chip .chip-dot {
-    width: 10px; height: 10px; border-radius: 50%;
+  .planet-btn .btn-dot {
+    width: 14px; height: 14px; border-radius: 50%;
     flex-shrink: 0;
   }
 
-  .planet-chip .chip-name {
-    font-size: 0.75rem; font-weight: 600;
+  .planet-btn .btn-type {
+    font-size: 0.6rem; font-weight: 400;
+    color: var(--text-dim); margin-top: 1px;
+  }
+
+  .sun-btn {
+    grid-column: 1 / -1;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(255,165,0,0.1), rgba(255,69,0,0.1));
+    border-color: rgba(255,165,0,0.3);
+  }
+
+  .sun-btn .btn-dot {
+    background: radial-gradient(circle, #fff700, #ff4500) !important;
+    box-shadow: 0 0 8px #ffa50066;
   }
 
   /* ===== SCALE VIEW ===== */
@@ -358,10 +355,9 @@
 <div class="container">
   <div class="orbit-view" id="orbitView">
     <div class="orbit-scene" id="orbitScene">
-      <div class="sun-center" onclick="showInfo(-1)"></div>
+      <div class="sun-center"></div>
     </div>
-    <div class="planet-list" id="planetList"></div>
-    <p class="instruction">Tap a planet above or below to explore</p>
+    <div class="planet-grid" id="planetGrid"></div>
   </div>
 
   <div class="scale-view" id="scaleView">
@@ -503,7 +499,7 @@ function drawStars() {
 drawStars();
 window.addEventListener('resize', drawStars);
 
-// Orbit view — static positions with large tap targets for touch
+// Orbit view — visual diagram + tappable button grid
 const orbitAngles = [200, 330, 45, 150, 280, 100, 220, 10];
 
 function buildOrbits() {
@@ -526,43 +522,43 @@ function buildOrbits() {
     const x = center + radius * Math.cos(angle);
     const y = center + radius * Math.sin(angle);
 
-    const tap = document.createElement('div');
-    tap.className = 'planet-tap';
-    tap.dataset.index = i;
-    tap.style.left = x + 'px';
-    tap.style.top = y + 'px';
-    tap.onclick = () => showInfo(i);
+    const marker = document.createElement('div');
+    marker.className = 'planet-marker';
+    marker.style.left = x + 'px';
+    marker.style.top = y + 'px';
 
     const dot = document.createElement('div');
     dot.className = 'planet-dot';
-    dot.style.cssText = `
-      width: ${size}px; height: ${size}px;
-      background: ${p.color};
-      box-shadow: 0 0 ${size}px ${p.color}66;
-    `;
-
-    if (p.name === 'Saturn') {
-      dot.style.boxShadow = `0 0 0 3px ${p.color}44, 0 0 0 5px ${p.color}22, 0 0 ${size}px ${p.color}66`;
-    }
+    dot.style.cssText = `width:${size}px;height:${size}px;background:${p.color};box-shadow:0 0 ${size}px ${p.color}66`;
 
     const label = document.createElement('div');
-    label.className = 'planet-name';
+    label.className = 'planet-label';
     label.textContent = p.name;
 
-    tap.appendChild(dot);
-    tap.appendChild(label);
-    scene.appendChild(tap);
+    marker.appendChild(dot);
+    marker.appendChild(label);
+    scene.appendChild(marker);
   });
 
-  // Build chip list below the orbit
-  const list = document.getElementById('planetList');
+  // Build tappable button grid
+  const grid = document.getElementById('planetGrid');
+
+  // Sun button first
+  const sunBtn = document.createElement('button');
+  sunBtn.className = 'planet-btn sun-btn';
+  sunBtn.setAttribute('type', 'button');
+  sunBtn.innerHTML = '<div class="btn-dot"></div><div><div>The Sun</div><div class="btn-type">Star</div></div>';
+  sunBtn.addEventListener('click', function() { showInfo(-1); });
+  grid.appendChild(sunBtn);
+
   planets.forEach((p, i) => {
-    const chip = document.createElement('div');
-    chip.className = 'planet-chip';
-    chip.dataset.index = i;
-    chip.onclick = () => showInfo(i);
-    chip.innerHTML = `<div class="chip-dot" style="background:${p.color}"></div><span class="chip-name">${p.name}</span>`;
-    list.appendChild(chip);
+    const btn = document.createElement('button');
+    btn.className = 'planet-btn';
+    btn.setAttribute('type', 'button');
+    btn.dataset.index = i;
+    btn.innerHTML = `<div class="btn-dot" style="background:${p.color};box-shadow:0 0 6px ${p.color}66"></div><div><div>${p.name}</div><div class="btn-type">${p.type}</div></div>`;
+    btn.addEventListener('click', function() { showInfo(i); });
+    grid.appendChild(btn);
   });
 }
 
@@ -686,13 +682,11 @@ function showInfo(index) {
   const panel = document.getElementById('infoPanel');
   const content = document.getElementById('infoPanelContent');
 
-  document.querySelectorAll('.planet-tap').forEach(p => p.classList.remove('selected'));
-  document.querySelectorAll('.planet-chip').forEach(p => p.classList.remove('selected'));
+  document.querySelectorAll('.planet-btn').forEach(p => p.classList.remove('selected'));
   document.querySelectorAll('.scale-row').forEach(r => r.classList.remove('selected'));
 
   if (index >= 0) {
-    document.querySelectorAll(`.planet-tap[data-index="${index}"]`).forEach(p => p.classList.add('selected'));
-    document.querySelectorAll(`.planet-chip[data-index="${index}"]`).forEach(p => p.classList.add('selected'));
+    document.querySelectorAll(`.planet-btn[data-index="${index}"]`).forEach(p => p.classList.add('selected'));
     document.querySelectorAll(`.scale-row[data-index="${index}"]`).forEach(r => r.classList.add('selected'));
   }
 
@@ -726,8 +720,7 @@ function showInfo(index) {
 function closeInfo() {
   document.getElementById('infoPanel').classList.remove('open');
   document.getElementById('overlay').classList.remove('open');
-  document.querySelectorAll('.planet-tap').forEach(p => p.classList.remove('selected'));
-  document.querySelectorAll('.planet-chip').forEach(p => p.classList.remove('selected'));
+  document.querySelectorAll('.planet-btn').forEach(p => p.classList.remove('selected'));
   document.querySelectorAll('.scale-row').forEach(r => r.classList.remove('selected'));
 }
 
