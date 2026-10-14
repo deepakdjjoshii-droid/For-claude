@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Indian Market Dashboard</title>
+<style>
+  :root {
+    --bg: #0c0e14;
+    --surface: #151820;
+    --surface2: #1c1f2e;
+    --border: #2a2d3e;
+    --text: #e8e8f0;
+    --text-dim: #8888aa;
+    --green: #00c853;
+    --red: #ff3d57;
+    --accent: #536dfe;
+    --gold: #ffd740;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  header {
+    padding: 16px 20px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--accent), #7c4dff);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .ticker-tape {
+    width: 100%;
+    height: 46px;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dashboard {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .index-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+  }
+
+  .index-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .index-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent);
+  }
+
+  .index-card.up::after { background: var(--green); }
+  .index-card.down::after { background: var(--red); }
+
+  .index-name {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .index-value {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin: 4px 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .index-change {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .index-change.up { color: var(--green); }
+  .index-change.down { color: var(--red); }
+
+  .chart-container {
+    background: var(--surface);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    height: 400px;
+  }
+
+  .chart-tabs {
+    display: flex;
+    gap: 0;
+    padding: 12px 16px 0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .chart-tab {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    border: none;
+    background: none;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.2s;
+  }
+
+  .chart-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .chart-frame {
+    width: 100%;
+    height: calc(100% - 46px);
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 600px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  .movers-card {
+    background: var(--surface);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    padding: 16px;
+    overflow: hidden;
+  }
+
+  .movers-card h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mover-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mover-row:last-child { border-bottom: none; }
+
+  .mover-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .mover-meta {
+    text-align: right;
+  }
+
+  .mover-price {
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mover-pct {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-top: 2px;
+  }
+
+  .mover-pct.up {
+    background: rgba(0, 200, 83, 0.15);
+    color: var(--green);
+  }
+
+  .mover-pct.down {
+    background: rgba(255, 61, 87, 0.15);
+    color: var(--red);
+  }
+
+  .heatmap-container {
+    background: var(--surface);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    height: 500px;
+  }
+
+  .sector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+  }
+
+  .sector-card {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+    border: 1px solid var(--border);
+    transition: transform 0.2s;
+  }
+
+  .sector-card:active { transform: scale(0.97); }
+
+  .sector-name {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .sector-change {
+    font-size: 1.1rem;
+    font-weight: 800;
+  }
+
+  .sector-change.up { color: var(--green); }
+  .sector-change.down { color: var(--red); }
+
+  .sector-bar {
+    height: 4px;
+    border-radius: 2px;
+    margin-top: 8px;
+    background: var(--border);
+    overflow: hidden;
+  }
+
+  .sector-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s;
+  }
+
+  .sector-bar-fill.up { background: var(--green); }
+  .sector-bar-fill.down { background: var(--red); }
+
+  .overview-widget {
+    background: var(--surface);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    height: 460px;
+  }
+
+  .widget-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  .market-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .market-status.open {
+    background: rgba(0, 200, 83, 0.1);
+    color: var(--green);
+  }
+
+  .market-status.closed {
+    background: rgba(255, 61, 87, 0.1);
+    color: var(--red);
+  }
+
+  .tv-widget-container {
+    width: 100%;
+    height: 100%;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📈</div>
+    <div>
+      <h1>Market Pulse</h1>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span class="market-status" id="marketStatus"></span>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      LIVE
+    </div>
+  </div>
+</header>
+
+<!-- TradingView Ticker Tape -->
+<div class="ticker-tape">
+  <div class="tradingview-widget-container">
+    <div class="tradingview-widget-container__widget"></div>
+    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+    {
+      "symbols": [
+        {"proName": "NSE:NIFTY", "title": "NIFTY 50"},
+        {"proName": "BSE:SENSEX", "title": "SENSEX"},
+        {"proName": "NSE:BANKNIFTY", "title": "BANK NIFTY"},
+        {"proName": "NSE:RELIANCE", "title": "RELIANCE"},
+        {"proName": "NSE:TCS", "title": "TCS"},
+        {"proName": "NSE:HDFCBANK", "title": "HDFC BANK"},
+        {"proName": "NSE:INFY", "title": "INFOSYS"},
+        {"proName": "NSE:ICICIBANK", "title": "ICICI BANK"},
+        {"proName": "NSE:SBIN", "title": "SBI"},
+        {"proName": "NSE:BHARTIARTL", "title": "AIRTEL"},
+        {"proName": "NSE:ITC", "title": "ITC"},
+        {"proName": "NSE:TATAMOTORS", "title": "TATA MOTORS"},
+        {"proName": "NSE:WIPRO", "title": "WIPRO"},
+        {"proName": "NSE:AXISBANK", "title": "AXIS BANK"},
+        {"proName": "NSE:ADANIENT", "title": "ADANI ENT"}
+      ],
+      "showSymbolLogo": true,
+      "isTransparent": true,
+      "displayMode": "adaptive",
+      "colorTheme": "dark",
+      "locale": "en"
+    }
+    </script>
+  </div>
+</div>
+
+<div class="dashboard">
+
+  <!-- Main Chart -->
+  <div>
+    <div class="section-title">Live Chart</div>
+    <div class="chart-container">
+      <div class="chart-tabs" id="chartTabs">
+        <button class="chart-tab active" data-symbol="NSE:NIFTY">NIFTY 50</button>
+        <button class="chart-tab" data-symbol="BSE:SENSEX">SENSEX</button>
+        <button class="chart-tab" data-symbol="NSE:BANKNIFTY">BANK NIFTY</button>
+        <button class="chart-tab" data-symbol="NSE:RELIANCE">RELIANCE</button>
+        <button class="chart-tab" data-symbol="NSE:TCS">TCS</button>
+        <button class="chart-tab" data-symbol="NSE:HDFCBANK">HDFC BANK</button>
+        <button class="chart-tab" data-symbol="NSE:INFY">INFOSYS</button>
+      </div>
+      <div class="chart-frame" id="chartFrame"></div>
+    </div>
+  </div>
+
+  <!-- Sector Performance -->
+  <div>
+    <div class="section-title">Sector Performance</div>
+    <div class="sector-grid" id="sectorGrid"></div>
+  </div>
+
+  <!-- Market Overview Widget -->
+  <div>
+    <div class="section-title">Market Overview</div>
+    <div class="overview-widget" id="overviewWidget"></div>
+  </div>
+
+  <!-- Heatmap -->
+  <div>
+    <div class="section-title">Market Heatmap — Nifty 50</div>
+    <div class="heatmap-container" id="heatmapWidget"></div>
+  </div>
+
+  <div class="footer">
+    Data provided by TradingView. Not financial advice.
+  </div>
+</div>
+
+<script>
+// Market status check (IST: 9:15 AM - 3:30 PM, Mon-Fri)
+function updateMarketStatus() {
+  const now = new Date();
+  const ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  const day = ist.getDay();
+  const hours = ist.getHours();
+  const mins = ist.getMinutes();
+  const timeVal = hours * 60 + mins;
+  const isWeekday = day >= 1 && day <= 5;
+  const isMarketHours = timeVal >= 555 && timeVal <= 930; // 9:15 to 15:30
+
+  const el = document.getElementById('marketStatus');
+  if (isWeekday && isMarketHours) {
+    el.className = 'market-status open';
+    el.textContent = '● Market Open';
+  } else {
+    el.className = 'market-status closed';
+    el.textContent = '● Market Closed';
+  }
+}
+updateMarketStatus();
+setInterval(updateMarketStatus, 60000);
+
+// Chart widget
+function loadChart(symbol) {
+  const container = document.getElementById('chartFrame');
+  container.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'tv-widget-container';
+  div.innerHTML = '<div class="tradingview-widget-container__widget"></div>';
+  const script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+  script.async = true;
+  script.textContent = JSON.stringify({
+    "autosize": true,
+    "symbol": symbol,
+    "interval": "5",
+    "timezone": "Asia/Kolkata",
+    "theme": "dark",
+    "style": "1",
+    "locale": "en",
+    "backgroundColor": "#151820",
+    "gridColor": "#1c1f2e",
+    "allow_symbol_change": true,
+    "support_host": "https://www.tradingview.com",
+    "hide_top_toolbar": false,
+    "hide_legend": false,
+    "save_image": false,
+    "studies": ["RSI@tv-basicstudies", "MAExp@tv-basicstudies"]
+  });
+  div.appendChild(script);
+  container.appendChild(div);
+}
+
+// Chart tabs
+document.getElementById('chartTabs').addEventListener('click', (e) => {
+  const tab = e.target.closest('.chart-tab');
+  if (!tab) return;
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  loadChart(tab.dataset.symbol);
+});
+
+loadChart('NSE:NIFTY');
+
+// Sector performance (simulated with TradingView sector indices)
+const sectors = [
+  { name: 'IT', symbol: 'NIFTY_IT' },
+  { name: 'Banking', symbol: 'NIFTY_BANK' },
+  { name: 'Pharma', symbol: 'NIFTY_PHARMA' },
+  { name: 'Auto', symbol: 'NIFTY_AUTO' },
+  { name: 'FMCG', symbol: 'NIFTY_FMCG' },
+  { name: 'Metal', symbol: 'NIFTY_METAL' },
+  { name: 'Energy', symbol: 'NIFTY_ENERGY' },
+  { name: 'Realty', symbol: 'NIFTY_REALTY' },
+  { name: 'Media', symbol: 'NIFTY_MEDIA' },
+  { name: 'PSU Bank', symbol: 'NIFTY_PSU_BANK' },
+  { name: 'Fin Services', symbol: 'NIFTY_FIN_SERVICE' },
+  { name: 'Infra', symbol: 'NIFTY_INFRA' },
+];
+
+function renderSectors() {
+  const grid = document.getElementById('sectorGrid');
+  grid.innerHTML = sectors.map(s => {
+    // Simulated change values — in production, these would come from an API
+    const change = (Math.random() * 4 - 1.5).toFixed(2);
+    const isUp = change >= 0;
+    const barWidth = Math.min(Math.abs(change) * 25, 100);
+    return `
+      <div class="sector-card">
+        <div class="sector-name">${s.name}</div>
+        <div class="sector-change ${isUp ? 'up' : 'down'}">
+          ${isUp ? '+' : ''}${change}%
+        </div>
+        <div class="sector-bar">
+          <div class="sector-bar-fill ${isUp ? 'up' : 'down'}" style="width:${barWidth}%"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+renderSectors();
+
+// Market Overview widget
+function loadOverview() {
+  const container = document.getElementById('overviewWidget');
+  container.innerHTML = '<div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div>';
+  const script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js';
+  script.async = true;
+  script.textContent = JSON.stringify({
+    "width": "100%",
+    "height": "100%",
+    "symbolsGroups": [
+      {
+        "name": "Indices",
+        "symbols": [
+          { "name": "NSE:NIFTY", "displayName": "NIFTY 50" },
+          { "name": "BSE:SENSEX", "displayName": "SENSEX" },
+          { "name": "NSE:BANKNIFTY", "displayName": "BANK NIFTY" },
+          { "name": "NSE:CNXMIDCAP", "displayName": "NIFTY MIDCAP" }
+        ]
+      },
+      {
+        "name": "Large Cap",
+        "symbols": [
+          { "name": "NSE:RELIANCE", "displayName": "Reliance" },
+          { "name": "NSE:TCS", "displayName": "TCS" },
+          { "name": "NSE:HDFCBANK", "displayName": "HDFC Bank" },
+          { "name": "NSE:INFY", "displayName": "Infosys" },
+          { "name": "NSE:ICICIBANK", "displayName": "ICICI Bank" },
+          { "name": "NSE:BHARTIARTL", "displayName": "Bharti Airtel" },
+          { "name": "NSE:SBIN", "displayName": "SBI" },
+          { "name": "NSE:ITC", "displayName": "ITC" },
+          { "name": "NSE:LT", "displayName": "L&T" },
+          { "name": "NSE:TATAMOTORS", "displayName": "Tata Motors" }
+        ]
+      },
+      {
+        "name": "Banking",
+        "symbols": [
+          { "name": "NSE:HDFCBANK", "displayName": "HDFC Bank" },
+          { "name": "NSE:ICICIBANK", "displayName": "ICICI Bank" },
+          { "name": "NSE:SBIN", "displayName": "SBI" },
+          { "name": "NSE:AXISBANK", "displayName": "Axis Bank" },
+          { "name": "NSE:KOTAKBANK", "displayName": "Kotak Bank" }
+        ]
+      },
+      {
+        "name": "IT",
+        "symbols": [
+          { "name": "NSE:TCS", "displayName": "TCS" },
+          { "name": "NSE:INFY", "displayName": "Infosys" },
+          { "name": "NSE:WIPRO", "displayName": "Wipro" },
+          { "name": "NSE:HCLTECH", "displayName": "HCL Tech" },
+          { "name": "NSE:TECHM", "displayName": "Tech Mahindra" }
+        ]
+      }
+    ],
+    "showSymbolLogo": true,
+    "isTransparent": true,
+    "colorTheme": "dark",
+    "locale": "en"
+  });
+  container.querySelector('.tradingview-widget-container').appendChild(script);
+}
+loadOverview();
+
+// Heatmap widget
+function loadHeatmap() {
+  const container = document.getElementById('heatmapWidget');
+  container.innerHTML = '<div class="tradingview-widget-container" style="width:100%;height:100%"><div class="tradingview-widget-container__widget" style="width:100%;height:100%"></div></div>';
+  const script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js';
+  script.async = true;
+  script.textContent = JSON.stringify({
+    "exchanges": [],
+    "dataSource": "SENSEX",
+    "grouping": "sector",
+    "blockSize": "market_cap_basic",
+    "blockColor": "change",
+    "locale": "en",
+    "symbolUrl": "",
+    "colorTheme": "dark",
+    "hasTopBar": true,
+    "isDataSetEnabled": true,
+    "isZoomEnabled": true,
+    "hasSymbolTooltip": true,
+    "isMonoSize": false,
+    "width": "100%",
+    "height": "100%"
+  });
+  container.querySelector('.tradingview-widget-container').appendChild(script);
+}
+loadHeatmap();
+</script>
+
+</body>
+</html>
