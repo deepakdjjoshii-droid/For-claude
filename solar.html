@@ -60,7 +60,7 @@
   /* ===== ORBIT VIEW ===== */
   .orbit-view {
     display: flex; flex-direction: column; align-items: center;
-    padding: 24px 0;
+    padding: 16px 0;
   }
 
   .orbit-scene {
@@ -73,7 +73,7 @@
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 40px; height: 40px;
+    width: 44px; height: 44px;
     background: radial-gradient(circle, #fff700 10%, #ffa500 50%, #ff4500 100%);
     border-radius: 50%;
     box-shadow: 0 0 30px #ffa50088, 0 0 60px #ff450044;
@@ -84,39 +84,75 @@
   .orbit-ring {
     position: absolute;
     top: 50%; left: 50%;
-    border: 1px solid rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .planet-tap {
+    position: absolute;
+    display: flex; flex-direction: column; align-items: center;
+    cursor: pointer; z-index: 12;
+    transform: translate(-50%, -50%);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .planet-tap::before {
+    content: '';
+    position: absolute;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    top: 50%; left: 50%;
     transform: translate(-50%, -50%);
   }
 
-  .orbit-planet {
-    position: absolute;
+  .planet-dot {
     border-radius: 50%;
-    cursor: pointer;
+    pointer-events: none;
     transition: transform 0.2s, box-shadow 0.2s;
-    z-index: 11;
   }
 
-  .orbit-planet:active { transform: scale(1.4); }
+  .planet-tap:active .planet-dot { transform: scale(1.5); }
 
-  .orbit-planet .label {
-    position: absolute;
-    top: calc(100% + 4px); left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.55rem; font-weight: 600;
+  .planet-tap.selected .planet-dot {
+    box-shadow: 0 0 14px 5px var(--accent);
+    transform: scale(1.4);
+  }
+
+  .planet-name {
+    font-size: 0.6rem; font-weight: 600;
     color: var(--text-dim);
+    margin-top: 4px;
     white-space: nowrap;
     pointer-events: none;
-    opacity: 0; transition: opacity 0.2s;
+    transition: color 0.2s;
   }
 
-  .orbit-planet:hover .label, .orbit-planet.selected .label {
-    opacity: 1; color: var(--text);
+  .planet-tap.selected .planet-name { color: var(--text); }
+
+  .planet-list {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 6px; margin-top: 16px; padding: 0 8px;
   }
 
-  .orbit-planet.selected {
-    box-shadow: 0 0 12px 4px var(--accent);
-    transform: scale(1.3);
+  .planet-chip {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 8px 14px;
+    cursor: pointer; transition: all 0.2s;
+  }
+
+  .planet-chip:active { transform: scale(0.95); }
+  .planet-chip.selected { border-color: var(--accent); background: var(--glow); }
+
+  .planet-chip .chip-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .planet-chip .chip-name {
+    font-size: 0.75rem; font-weight: 600;
   }
 
   /* ===== SCALE VIEW ===== */
@@ -298,10 +334,12 @@
 
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-  @keyframes orbit {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to { transform: translate(-50%, -50%) rotate(360deg); }
+  @keyframes orbitGlow {
+    0%, 100% { box-shadow: 0 0 30px #ffa50088, 0 0 60px #ff450044; }
+    50% { box-shadow: 0 0 40px #ffa500aa, 0 0 80px #ff450066; }
   }
+
+  .sun-center { animation: orbitGlow 3s ease-in-out infinite; }
 </style>
 </head>
 <body>
@@ -322,7 +360,8 @@
     <div class="orbit-scene" id="orbitScene">
       <div class="sun-center" onclick="showInfo(-1)"></div>
     </div>
-    <p class="instruction">Tap any planet to explore</p>
+    <div class="planet-list" id="planetList"></div>
+    <p class="instruction">Tap a planet above or below to explore</p>
   </div>
 
   <div class="scale-view" id="scaleView">
@@ -464,12 +503,14 @@ function drawStars() {
 drawStars();
 window.addEventListener('resize', drawStars);
 
-// Orbit view
+// Orbit view — static positions with large tap targets for touch
+const orbitAngles = [200, 330, 45, 150, 280, 100, 220, 10];
+
 function buildOrbits() {
   const scene = document.getElementById('orbitScene');
   const w = scene.offsetWidth;
   const center = w / 2;
-  const minR = 35, maxR = center - 12;
+  const minR = 32, maxR = center - 20;
 
   planets.forEach((p, i) => {
     const pct = i / (planets.length - 1);
@@ -480,41 +521,48 @@ function buildOrbits() {
     ring.style.width = ring.style.height = (radius * 2) + 'px';
     scene.appendChild(ring);
 
-    const size = p.diameter > 100000 ? 16 : p.diameter > 40000 ? 12 : p.diameter > 10000 ? 9 : 7;
+    const size = p.diameter > 100000 ? 18 : p.diameter > 40000 ? 14 : p.diameter > 10000 ? 11 : 8;
+    const angle = orbitAngles[i] * (Math.PI / 180);
+    const x = center + radius * Math.cos(angle);
+    const y = center + radius * Math.sin(angle);
 
-    const orbitWrapper = document.createElement('div');
-    orbitWrapper.style.cssText = `
-      position: absolute; top: 50%; left: 50%;
-      width: ${radius * 2}px; height: ${radius * 2}px;
-      transform: translate(-50%, -50%) rotate(${Math.random() * 360}deg);
-      animation: orbit ${20 + i * 12}s linear infinite;
-    `;
+    const tap = document.createElement('div');
+    tap.className = 'planet-tap';
+    tap.dataset.index = i;
+    tap.style.left = x + 'px';
+    tap.style.top = y + 'px';
+    tap.onclick = () => showInfo(i);
 
     const dot = document.createElement('div');
-    dot.className = 'orbit-planet';
-    dot.dataset.index = i;
+    dot.className = 'planet-dot';
     dot.style.cssText = `
       width: ${size}px; height: ${size}px;
       background: ${p.color};
-      top: -${size/2}px; left: calc(50% - ${size/2}px);
-      box-shadow: 0 0 ${size}px ${p.color}44;
+      box-shadow: 0 0 ${size}px ${p.color}66;
     `;
 
     if (p.name === 'Saturn') {
-      dot.style.cssText += `
-        border: none;
-        box-shadow: 0 0 0 3px ${p.color}44, 0 0 0 5px ${p.color}22, 0 0 ${size}px ${p.color}44;
-      `;
+      dot.style.boxShadow = `0 0 0 3px ${p.color}44, 0 0 0 5px ${p.color}22, 0 0 ${size}px ${p.color}66`;
     }
 
-    const label = document.createElement('span');
-    label.className = 'label';
+    const label = document.createElement('div');
+    label.className = 'planet-name';
     label.textContent = p.name;
-    dot.appendChild(label);
 
-    dot.onclick = (e) => { e.stopPropagation(); showInfo(i); };
-    orbitWrapper.appendChild(dot);
-    scene.appendChild(orbitWrapper);
+    tap.appendChild(dot);
+    tap.appendChild(label);
+    scene.appendChild(tap);
+  });
+
+  // Build chip list below the orbit
+  const list = document.getElementById('planetList');
+  planets.forEach((p, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'planet-chip';
+    chip.dataset.index = i;
+    chip.onclick = () => showInfo(i);
+    chip.innerHTML = `<div class="chip-dot" style="background:${p.color}"></div><span class="chip-name">${p.name}</span>`;
+    list.appendChild(chip);
   });
 }
 
@@ -638,11 +686,13 @@ function showInfo(index) {
   const panel = document.getElementById('infoPanel');
   const content = document.getElementById('infoPanelContent');
 
-  document.querySelectorAll('.orbit-planet').forEach(p => p.classList.remove('selected'));
+  document.querySelectorAll('.planet-tap').forEach(p => p.classList.remove('selected'));
+  document.querySelectorAll('.planet-chip').forEach(p => p.classList.remove('selected'));
   document.querySelectorAll('.scale-row').forEach(r => r.classList.remove('selected'));
 
   if (index >= 0) {
-    document.querySelectorAll(`.orbit-planet[data-index="${index}"]`).forEach(p => p.classList.add('selected'));
+    document.querySelectorAll(`.planet-tap[data-index="${index}"]`).forEach(p => p.classList.add('selected'));
+    document.querySelectorAll(`.planet-chip[data-index="${index}"]`).forEach(p => p.classList.add('selected'));
     document.querySelectorAll(`.scale-row[data-index="${index}"]`).forEach(r => r.classList.add('selected'));
   }
 
@@ -676,7 +726,8 @@ function showInfo(index) {
 function closeInfo() {
   document.getElementById('infoPanel').classList.remove('open');
   document.getElementById('overlay').classList.remove('open');
-  document.querySelectorAll('.orbit-planet').forEach(p => p.classList.remove('selected'));
+  document.querySelectorAll('.planet-tap').forEach(p => p.classList.remove('selected'));
+  document.querySelectorAll('.planet-chip').forEach(p => p.classList.remove('selected'));
   document.querySelectorAll('.scale-row').forEach(r => r.classList.remove('selected'));
 }
 
