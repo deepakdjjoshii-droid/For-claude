@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Magic 8-Ball</title>
+<style>
+  :root {
+    --bg: #0a0a1a;
+    --surface: #14142b;
+    --text: #e0e0f0;
+    --text-dim: #8888aa;
+    --positive: #00e676;
+    --neutral: #ffd740;
+    --negative: #ff5252;
+    --accent: #7c4dff;
+    --ball-dark: #111;
+    --ball-highlight: #333;
+    --window-bg: #1a1a4e;
+  }
+
+  :root[data-theme="light"] {
+    --bg: #f0f0fa;
+    --surface: #ffffff;
+    --text: #1a1a2e;
+    --text-dim: #777799;
+    --ball-dark: #222;
+    --ball-highlight: #444;
+    --window-bg: #1a1a4e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: background 0.4s;
+  }
+
+  header {
+    width: 100%;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .streak {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    background: var(--surface);
+    padding: 6px 14px;
+    border-radius: 20px;
+  }
+
+  .streak span { color: var(--accent); font-weight: 700; }
+
+  .theme-toggle {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: var(--surface);
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .ball-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .ball-container {
+    position: relative;
+    width: min(300px, 70vw);
+    height: min(300px, 70vw);
+    cursor: pointer;
+  }
+
+  .ball {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--ball-highlight), var(--ball-dark) 60%, #000 100%);
+    box-shadow:
+      0 20px 60px rgba(0,0,0,0.6),
+      inset 0 -8px 20px rgba(0,0,0,0.8),
+      inset 0 8px 20px rgba(80,80,80,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ball:active { transform: scale(0.97); }
+
+  .ball-window {
+    width: 45%;
+    height: 45%;
+    border-radius: 50%;
+    background: var(--window-bg);
+    border: 3px solid rgba(100, 100, 180, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ball-window::before {
+    content: '8';
+    font-size: min(3.5rem, 8vw);
+    font-weight: 900;
+    color: #fff;
+    opacity: 0.9;
+    position: absolute;
+    transition: opacity 0.3s;
+  }
+
+  .ball-window.has-answer::before { opacity: 0; }
+
+  .answer-text {
+    font-size: min(0.7rem, 2.5vw);
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.3;
+    opacity: 0;
+    transition: opacity 0.5s;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ball-window.has-answer .answer-text { opacity: 1; }
+
+  .ball-shine {
+    position: absolute;
+    top: 8%;
+    left: 20%;
+    width: 30%;
+    height: 20%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(255,255,255,0.18), transparent);
+    pointer-events: none;
+  }
+
+  .shaking {
+    animation: shake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(-8px, -6px) rotate(-3deg); }
+    20% { transform: translate(6px, 8px) rotate(2deg); }
+    30% { transform: translate(-10px, 4px) rotate(-2deg); }
+    40% { transform: translate(8px, -8px) rotate(3deg); }
+    50% { transform: translate(-6px, 6px) rotate(-1deg); }
+    60% { transform: translate(10px, -4px) rotate(2deg); }
+    70% { transform: translate(-4px, 8px) rotate(-3deg); }
+    80% { transform: translate(6px, -6px) rotate(1deg); }
+    90% { transform: translate(-8px, 2px) rotate(-2deg); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .prompt-text {
+    margin-top: 24px;
+    font-size: 1rem;
+    color: var(--text-dim);
+    text-align: center;
+    animation: fadeUp 0.5s ease;
+  }
+
+  .input-area {
+    width: 100%;
+    max-width: 500px;
+    padding: 0 20px 16px;
+  }
+
+  .question-form {
+    display: flex;
+    gap: 10px;
+  }
+
+  .question-input {
+    flex: 1;
+    padding: 14px 18px;
+    border-radius: 16px;
+    border: 2px solid transparent;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .question-input:focus { border-color: var(--accent); }
+  .question-input::placeholder { color: var(--text-dim); }
+
+  .ask-btn {
+    padding: 14px 24px;
+    border-radius: 16px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .ask-btn:active { transform: scale(0.96); }
+  .ask-btn:disabled { opacity: 0.5; }
+
+  .history-section {
+    width: 100%;
+    max-width: 500px;
+    padding: 0 20px 40px;
+  }
+
+  .history-title {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .history-item {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 14px 16px;
+    animation: fadeUp 0.4s ease;
+    border-left: 4px solid var(--text-dim);
+  }
+
+  .history-item.positive { border-left-color: var(--positive); }
+  .history-item.neutral { border-left-color: var(--neutral); }
+  .history-item.negative { border-left-color: var(--negative); }
+
+  .history-q {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .history-a {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .history-a.positive { color: var(--positive); }
+  .history-a.neutral { color: var(--neutral); }
+  .history-a.negative { color: var(--negative); }
+
+  .clear-btn {
+    margin-top: 12px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--text-dim);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    font-family: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Magic 8-Ball</h1>
+  <div class="streak">Wisdom: <span id="streakCount">0</span></div>
+  <button class="theme-toggle" id="themeBtn" aria-label="Toggle theme">☀️</button>
+</header>
+
+<div class="ball-area">
+  <div class="ball-container" id="ballContainer">
+    <div class="ball" id="ball">
+      <div class="ball-shine"></div>
+      <div class="ball-window" id="window">
+        <div class="answer-text" id="answerText"></div>
+      </div>
+    </div>
+  </div>
+  <p class="prompt-text" id="prompt">Ask a question, then tap the ball</p>
+</div>
+
+<div class="input-area">
+  <form class="question-form" id="form">
+    <input
+      class="question-input"
+      id="questionInput"
+      type="text"
+      placeholder="Will I become a billionaire?"
+      enterkeyhint="go"
+      autocomplete="off"
+    >
+    <button class="ask-btn" type="submit" id="askBtn">Shake</button>
+  </form>
+</div>
+
+<div class="history-section" id="historySection" style="display:none">
+  <div class="history-title">Past Wisdom</div>
+  <div class="history-list" id="historyList"></div>
+  <button class="clear-btn" id="clearBtn">Clear history</button>
+</div>
+
+<script>
+const answers = [
+  { text: "It is certain", mood: "positive" },
+  { text: "It is decidedly so", mood: "positive" },
+  { text: "Without a doubt", mood: "positive" },
+  { text: "Yes definitely", mood: "positive" },
+  { text: "You may rely on it", mood: "positive" },
+  { text: "As I see it, yes", mood: "positive" },
+  { text: "Most likely", mood: "positive" },
+  { text: "Outlook good", mood: "positive" },
+  { text: "Yes", mood: "positive" },
+  { text: "Signs point to yes", mood: "positive" },
+  { text: "Reply hazy, try again", mood: "neutral" },
+  { text: "Ask again later", mood: "neutral" },
+  { text: "Better not tell you now", mood: "neutral" },
+  { text: "Cannot predict now", mood: "neutral" },
+  { text: "Concentrate and ask again", mood: "neutral" },
+  { text: "Don't count on it", mood: "negative" },
+  { text: "My reply is no", mood: "negative" },
+  { text: "My sources say no", mood: "negative" },
+  { text: "Outlook not so good", mood: "negative" },
+  { text: "Very doubtful", mood: "negative" },
+];
+
+const ball = document.getElementById("ball");
+const ballContainer = document.getElementById("ballContainer");
+const windowEl = document.getElementById("window");
+const answerText = document.getElementById("answerText");
+const form = document.getElementById("form");
+const input = document.getElementById("questionInput");
+const askBtn = document.getElementById("askBtn");
+const prompt = document.getElementById("prompt");
+const streakCount = document.getElementById("streakCount");
+const historySection = document.getElementById("historySection");
+const historyList = document.getElementById("historyList");
+const clearBtn = document.getElementById("clearBtn");
+const themeBtn = document.getElementById("themeBtn");
+
+let streak = 0;
+let isShaking = false;
+let history = [];
+
+try {
+  const saved = localStorage.getItem("m8b_history");
+  if (saved) history = JSON.parse(saved);
+  streak = parseInt(localStorage.getItem("m8b_streak") || "0", 10);
+} catch(e) {}
+streakCount.textContent = streak;
+renderHistory();
+
+try {
+  const theme = localStorage.getItem("m8b_theme");
+  if (theme === "light") {
+    document.documentElement.setAttribute("data-theme", "light");
+    themeBtn.textContent = "🌙";
+  }
+} catch(e) {}
+
+themeBtn.addEventListener("click", () => {
+  const isLight = document.documentElement.getAttribute("data-theme") === "light";
+  if (isLight) {
+    document.documentElement.removeAttribute("data-theme");
+    themeBtn.textContent = "☀️";
+    try { localStorage.setItem("m8b_theme", "dark"); } catch(e) {}
+  } else {
+    document.documentElement.setAttribute("data-theme", "light");
+    themeBtn.textContent = "🌙";
+    try { localStorage.setItem("m8b_theme", "light"); } catch(e) {}
+  }
+});
+
+function shakeBall(question) {
+  if (isShaking) return;
+  isShaking = true;
+
+  windowEl.classList.remove("has-answer");
+  answerText.textContent = "";
+  askBtn.disabled = true;
+  prompt.textContent = "The spirits are consulting...";
+
+  ball.classList.add("shaking");
+
+  const playClick = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 150 + Math.random() * 100;
+      osc.type = "triangle";
+      gain.gain.value = 0.08;
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch(e) {}
+  };
+
+  playClick();
+  setTimeout(playClick, 150);
+  setTimeout(playClick, 300);
+
+  setTimeout(() => {
+    ball.classList.remove("shaking");
+
+    const answer = answers[Math.floor(Math.random() * answers.length)];
+    answerText.textContent = answer.text;
+    windowEl.classList.add("has-answer");
+
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 520;
+      osc.type = "sine";
+      gain.gain.value = 0.1;
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.4);
+    } catch(e) {}
+
+    streak++;
+    streakCount.textContent = streak;
+    try { localStorage.setItem("m8b_streak", streak); } catch(e) {}
+
+    const moodLabels = { positive: "Favorable", neutral: "Uncertain", negative: "Unfavorable" };
+    prompt.textContent = moodLabels[answer.mood];
+    prompt.style.color = `var(--${answer.mood})`;
+
+    history.unshift({ q: question, a: answer.text, mood: answer.mood });
+    if (history.length > 50) history.pop();
+    try { localStorage.setItem("m8b_history", JSON.stringify(history)); } catch(e) {}
+    renderHistory();
+
+    isShaking = false;
+    askBtn.disabled = false;
+    input.value = "";
+
+    setTimeout(() => {
+      prompt.textContent = "Ask another question...";
+      prompt.style.color = "";
+    }, 3000);
+  }, 800);
+}
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const q = input.value.trim();
+  if (!q) {
+    input.focus();
+    return;
+  }
+  shakeBall(q);
+});
+
+ballContainer.addEventListener("click", () => {
+  const q = input.value.trim();
+  if (q) shakeBall(q);
+  else input.focus();
+});
+
+function renderHistory() {
+  if (history.length === 0) {
+    historySection.style.display = "none";
+    return;
+  }
+  historySection.style.display = "block";
+  historyList.innerHTML = history.map(h =>
+    `<div class="history-item ${h.mood}">
+      <div class="history-q">${esc(h.q)}</div>
+      <div class="history-a ${h.mood}">${esc(h.a)}</div>
+    </div>`
+  ).join("");
+}
+
+function esc(s) {
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+clearBtn.addEventListener("click", () => {
+  history = [];
+  try { localStorage.removeItem("m8b_history"); } catch(e) {}
+  renderHistory();
+});
+</script>
+</body>
+</html>
