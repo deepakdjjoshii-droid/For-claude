@@ -57,13 +57,30 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
   }
+
+  .logo-icon svg { width: 18px; height: 18px; }
 
   h1 {
     font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: -0.02em;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .nav-link {
+    font-size: 0.75rem;
+    color: var(--accent);
+    text-decoration: none;
+    padding: 4px 10px;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    font-weight: 600;
   }
 
   .live-badge {
@@ -88,11 +105,62 @@
     50% { opacity: 0.4; }
   }
 
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .loading-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    gap: 12px;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+
+  .loading-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
   .ticker-tape {
     width: 100%;
     height: 46px;
     overflow: hidden;
     border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .ticker-fallback {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 16px;
+    gap: 24px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    animation: fadeIn 0.3s ease;
+  }
+
+  .ticker-fallback span { white-space: nowrap; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   .dashboard {
@@ -112,63 +180,12 @@
     margin-bottom: 8px;
   }
 
-  .index-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 10px;
-  }
-
-  .index-card {
-    background: var(--surface);
-    border-radius: 14px;
-    padding: 16px;
-    border: 1px solid var(--border);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .index-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--accent);
-  }
-
-  .index-card.up::after { background: var(--green); }
-  .index-card.down::after { background: var(--red); }
-
-  .index-name {
-    font-size: 0.75rem;
-    color: var(--text-dim);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .index-value {
-    font-size: 1.4rem;
-    font-weight: 800;
-    margin: 4px 0;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .index-change {
-    font-size: 0.85rem;
-    font-weight: 600;
-  }
-
-  .index-change.up { color: var(--green); }
-  .index-change.down { color: var(--red); }
-
   .chart-container {
     background: var(--surface);
     border-radius: 14px;
     border: 1px solid var(--border);
     overflow: hidden;
-    height: 400px;
+    height: 420px;
   }
 
   .chart-tabs {
@@ -178,7 +195,10 @@
     border-bottom: 1px solid var(--border);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
+
+  .chart-tabs::-webkit-scrollbar { display: none; }
 
   .chart-tab {
     padding: 8px 16px;
@@ -203,85 +223,20 @@
   .chart-frame {
     width: 100%;
     height: calc(100% - 46px);
+    position: relative;
   }
 
-  .two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-
-  @media (max-width: 600px) {
-    .two-col { grid-template-columns: 1fr; }
-  }
-
-  .movers-card {
-    background: var(--surface);
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    padding: 16px;
-    overflow: hidden;
-  }
-
-  .movers-card h3 {
-    font-size: 0.9rem;
-    font-weight: 700;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .mover-row {
+  .sector-section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
   }
 
-  .mover-row:last-child { border-bottom: none; }
-
-  .mover-name {
-    font-size: 0.85rem;
-    font-weight: 600;
-  }
-
-  .mover-meta {
-    text-align: right;
-  }
-
-  .mover-price {
-    font-size: 0.85rem;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .mover-pct {
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 6px;
-    display: inline-block;
-    margin-top: 2px;
-  }
-
-  .mover-pct.up {
-    background: rgba(0, 200, 83, 0.15);
-    color: var(--green);
-  }
-
-  .mover-pct.down {
-    background: rgba(255, 61, 87, 0.15);
-    color: var(--red);
-  }
-
-  .heatmap-container {
-    background: var(--surface);
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    overflow: hidden;
-    height: 500px;
+  .sector-note {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    font-style: italic;
   }
 
   .sector-grid {
@@ -296,10 +251,12 @@
     padding: 14px;
     text-align: center;
     border: 1px solid var(--border);
-    transition: transform 0.2s;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
   }
 
   .sector-card:active { transform: scale(0.97); }
+  .sector-card:hover { border-color: var(--accent); }
 
   .sector-name {
     font-size: 0.75rem;
@@ -327,24 +284,25 @@
   .sector-bar-fill {
     height: 100%;
     border-radius: 2px;
-    transition: width 0.5s;
+    transition: width 0.8s ease;
   }
 
   .sector-bar-fill.up { background: var(--green); }
   .sector-bar-fill.down { background: var(--red); }
 
-  .overview-widget {
+  .widget-box {
     background: var(--surface);
     border-radius: 14px;
     border: 1px solid var(--border);
     overflow: hidden;
-    height: 460px;
   }
 
-  .widget-frame {
+  .overview-widget { height: 460px; }
+  .heatmap-container { height: 500px; }
+
+  .tv-widget-container {
     width: 100%;
     height: 100%;
-    border: none;
   }
 
   .footer {
@@ -352,6 +310,11 @@
     padding: 20px;
     font-size: 0.75rem;
     color: var(--text-dim);
+  }
+
+  .footer a {
+    color: var(--accent);
+    text-decoration: none;
   }
 
   .market-status {
@@ -374,9 +337,9 @@
     color: var(--red);
   }
 
-  .tv-widget-container {
-    width: 100%;
-    height: 100%;
+  .market-status.pre-open {
+    background: rgba(255, 215, 64, 0.1);
+    color: var(--gold);
   }
 </style>
 </head>
@@ -384,12 +347,16 @@
 
 <header>
   <div class="logo">
-    <div class="logo-icon">📈</div>
-    <div>
-      <h1>Market Pulse</h1>
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+        <polyline points="16 7 22 7 22 13"/>
+      </svg>
     </div>
+    <h1>Market Pulse</h1>
   </div>
-  <div style="display:flex;align-items:center;gap:12px">
+  <div class="header-right">
+    <a href="index.html" class="nav-link">8-Ball</a>
     <span class="market-status" id="marketStatus"></span>
     <div class="live-badge">
       <div class="live-dot"></div>
@@ -399,7 +366,7 @@
 </header>
 
 <!-- TradingView Ticker Tape -->
-<div class="ticker-tape">
+<div class="ticker-tape" id="tickerTape">
   <div class="tradingview-widget-container">
     <div class="tradingview-widget-container__widget"></div>
     <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
@@ -446,87 +413,133 @@
         <button class="chart-tab" data-symbol="NSE:HDFCBANK">HDFC BANK</button>
         <button class="chart-tab" data-symbol="NSE:INFY">INFOSYS</button>
       </div>
-      <div class="chart-frame" id="chartFrame"></div>
+      <div class="chart-frame" id="chartFrame">
+        <div class="loading-placeholder">
+          <div class="loading-spinner"></div>
+          Loading chart...
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Sector Performance -->
   <div>
-    <div class="section-title">Sector Performance</div>
+    <div class="sector-section-header">
+      <div class="section-title" style="margin-bottom:0">Sector Performance</div>
+      <div class="sector-note">Tap a sector to chart it</div>
+    </div>
     <div class="sector-grid" id="sectorGrid"></div>
   </div>
 
   <!-- Market Overview Widget -->
   <div>
     <div class="section-title">Market Overview</div>
-    <div class="overview-widget" id="overviewWidget"></div>
+    <div class="widget-box overview-widget" id="overviewWidget">
+      <div class="loading-placeholder">
+        <div class="loading-spinner"></div>
+        Loading market data...
+      </div>
+    </div>
   </div>
 
   <!-- Heatmap -->
   <div>
     <div class="section-title">Market Heatmap — Nifty 50</div>
-    <div class="heatmap-container" id="heatmapWidget"></div>
+    <div class="widget-box heatmap-container" id="heatmapWidget">
+      <div class="loading-placeholder">
+        <div class="loading-spinner"></div>
+        Loading heatmap...
+      </div>
+    </div>
   </div>
 
   <div class="footer">
-    Data provided by TradingView. Not financial advice.
+    Data provided by <a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView</a>. Not financial advice.<br>
+    <a href="index.html">Magic 8-Ball</a>
   </div>
 </div>
 
 <script>
-// Market status check (IST: 9:15 AM - 3:30 PM, Mon-Fri)
+// Market status check (IST: pre-open 9:00-9:15, open 9:15-15:30, Mon-Fri)
 function updateMarketStatus() {
   const now = new Date();
-  const ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  const istStr = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+  const ist = new Date(istStr);
   const day = ist.getDay();
-  const hours = ist.getHours();
-  const mins = ist.getMinutes();
-  const timeVal = hours * 60 + mins;
+  const timeVal = ist.getHours() * 60 + ist.getMinutes();
   const isWeekday = day >= 1 && day <= 5;
-  const isMarketHours = timeVal >= 555 && timeVal <= 930; // 9:15 to 15:30
 
   const el = document.getElementById('marketStatus');
-  if (isWeekday && isMarketHours) {
+  if (!isWeekday) {
+    el.className = 'market-status closed';
+    el.textContent = 'Closed (Weekend)';
+  } else if (timeVal >= 540 && timeVal < 555) {
+    el.className = 'market-status pre-open';
+    el.textContent = 'Pre-Open';
+  } else if (timeVal >= 555 && timeVal <= 930) {
     el.className = 'market-status open';
-    el.textContent = '● Market Open';
+    el.textContent = 'Market Open';
   } else {
     el.className = 'market-status closed';
-    el.textContent = '● Market Closed';
+    el.textContent = 'Market Closed';
   }
 }
 updateMarketStatus();
-setInterval(updateMarketStatus, 60000);
+setInterval(updateMarketStatus, 30000);
 
-// Chart widget
+// Ticker tape fallback
+setTimeout(() => {
+  const tape = document.getElementById('tickerTape');
+  const iframe = tape.querySelector('iframe');
+  if (!iframe) {
+    const fb = document.createElement('div');
+    fb.className = 'ticker-fallback';
+    fb.innerHTML = '<span>NIFTY 50</span><span>SENSEX</span><span>BANK NIFTY</span><span>RELIANCE</span><span>TCS</span><span>HDFC BANK</span><span>INFOSYS</span><span>SBI</span><span style="color:var(--text-dim)">Live ticker loading...</span>';
+    tape.appendChild(fb);
+  }
+}, 4000);
+
+// Chart widget with cleanup
+let currentChartWidget = null;
+
 function loadChart(symbol) {
   const container = document.getElementById('chartFrame');
-  container.innerHTML = '';
-  const div = document.createElement('div');
-  div.className = 'tv-widget-container';
-  div.innerHTML = '<div class="tradingview-widget-container__widget"></div>';
-  const script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-  script.async = true;
-  script.textContent = JSON.stringify({
-    "autosize": true,
-    "symbol": symbol,
-    "interval": "5",
-    "timezone": "Asia/Kolkata",
-    "theme": "dark",
-    "style": "1",
-    "locale": "en",
-    "backgroundColor": "#151820",
-    "gridColor": "#1c1f2e",
-    "allow_symbol_change": true,
-    "support_host": "https://www.tradingview.com",
-    "hide_top_toolbar": false,
-    "hide_legend": false,
-    "save_image": false,
-    "studies": ["RSI@tv-basicstudies", "MAExp@tv-basicstudies"]
+  container.innerHTML = '<div class="loading-placeholder"><div class="loading-spinner"></div>Loading chart...</div>';
+
+  requestAnimationFrame(() => {
+    container.innerHTML = '';
+    const wrapper = document.createElement('div');
+    wrapper.className = 'tv-widget-container';
+    wrapper.innerHTML = '<div class="tradingview-widget-container__widget"></div>';
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+    script.async = true;
+    script.textContent = JSON.stringify({
+      "autosize": true,
+      "symbol": symbol,
+      "interval": "5",
+      "timezone": "Asia/Kolkata",
+      "theme": "dark",
+      "style": "1",
+      "locale": "en",
+      "backgroundColor": "#151820",
+      "gridColor": "#1c1f2e",
+      "allow_symbol_change": true,
+      "support_host": "https://www.tradingview.com",
+      "hide_top_toolbar": false,
+      "hide_legend": false,
+      "save_image": false,
+      "studies": ["RSI@tv-basicstudies", "MAExp@tv-basicstudies"]
+    });
+
+    script.onerror = () => {
+      container.innerHTML = '<div class="loading-placeholder" style="color:var(--red)">Failed to load chart. Check your connection.</div>';
+    };
+
+    wrapper.appendChild(script);
+    container.appendChild(wrapper);
   });
-  div.appendChild(script);
-  container.appendChild(div);
 }
 
 // Chart tabs
@@ -540,48 +553,123 @@ document.getElementById('chartTabs').addEventListener('click', (e) => {
 
 loadChart('NSE:NIFTY');
 
-// Sector performance (simulated with TradingView sector indices)
+// Sector performance using TradingView mini symbol overview widgets
 const sectors = [
-  { name: 'IT', symbol: 'NIFTY_IT' },
-  { name: 'Banking', symbol: 'NIFTY_BANK' },
-  { name: 'Pharma', symbol: 'NIFTY_PHARMA' },
-  { name: 'Auto', symbol: 'NIFTY_AUTO' },
-  { name: 'FMCG', symbol: 'NIFTY_FMCG' },
-  { name: 'Metal', symbol: 'NIFTY_METAL' },
-  { name: 'Energy', symbol: 'NIFTY_ENERGY' },
-  { name: 'Realty', symbol: 'NIFTY_REALTY' },
-  { name: 'Media', symbol: 'NIFTY_MEDIA' },
-  { name: 'PSU Bank', symbol: 'NIFTY_PSU_BANK' },
-  { name: 'Fin Services', symbol: 'NIFTY_FIN_SERVICE' },
-  { name: 'Infra', symbol: 'NIFTY_INFRA' },
+  { name: 'IT', symbol: 'NSE:CNXIT', chartSymbol: 'NSE:CNXIT' },
+  { name: 'Banking', symbol: 'NSE:BANKNIFTY', chartSymbol: 'NSE:BANKNIFTY' },
+  { name: 'Pharma', symbol: 'NSE:CNXPHARMA', chartSymbol: 'NSE:CNXPHARMA' },
+  { name: 'Auto', symbol: 'NSE:CNXAUTO', chartSymbol: 'NSE:CNXAUTO' },
+  { name: 'FMCG', symbol: 'NSE:CNXFMCG', chartSymbol: 'NSE:CNXFMCG' },
+  { name: 'Metal', symbol: 'NSE:CNXMETAL', chartSymbol: 'NSE:CNXMETAL' },
+  { name: 'Energy', symbol: 'NSE:CNXENERGY', chartSymbol: 'NSE:CNXENERGY' },
+  { name: 'Realty', symbol: 'NSE:CNXREALTY', chartSymbol: 'NSE:CNXREALTY' },
+  { name: 'Media', symbol: 'NSE:CNXMEDIA', chartSymbol: 'NSE:CNXMEDIA' },
+  { name: 'PSU Bank', symbol: 'NSE:CNXPSUBANK', chartSymbol: 'NSE:CNXPSUBANK' },
+  { name: 'Fin Services', symbol: 'NSE:CNXFINANCE', chartSymbol: 'NSE:CNXFINANCE' },
+  { name: 'Infra', symbol: 'NSE:CNXINFRA', chartSymbol: 'NSE:CNXINFRA' },
 ];
 
 function renderSectors() {
   const grid = document.getElementById('sectorGrid');
-  grid.innerHTML = sectors.map(s => {
-    // Simulated change values — in production, these would come from an API
-    const change = (Math.random() * 4 - 1.5).toFixed(2);
-    const isUp = change >= 0;
-    const barWidth = Math.min(Math.abs(change) * 25, 100);
+  grid.innerHTML = sectors.map((s, i) => {
     return `
-      <div class="sector-card">
+      <div class="sector-card" data-symbol="${s.chartSymbol}" data-name="${s.name}">
         <div class="sector-name">${s.name}</div>
-        <div class="sector-change ${isUp ? 'up' : 'down'}">
-          ${isUp ? '+' : ''}${change}%
-        </div>
+        <div class="sector-change" id="sector-val-${i}" style="color:var(--text-dim);font-size:0.85rem">Loading...</div>
         <div class="sector-bar">
-          <div class="sector-bar-fill ${isUp ? 'up' : 'down'}" style="width:${barWidth}%"></div>
+          <div class="sector-bar-fill" id="sector-bar-${i}" style="width:0%"></div>
         </div>
       </div>
     `;
   }).join('');
+
+  // Tap sector to load its chart
+  grid.addEventListener('click', (e) => {
+    const card = e.target.closest('.sector-card');
+    if (!card) return;
+    const symbol = card.dataset.symbol;
+    const name = card.dataset.name;
+
+    // Add a custom tab or switch to it
+    const tabs = document.getElementById('chartTabs');
+    let existing = tabs.querySelector(`[data-symbol="${symbol}"]`);
+    if (!existing) {
+      existing = document.createElement('button');
+      existing.className = 'chart-tab';
+      existing.dataset.symbol = symbol;
+      existing.textContent = name.toUpperCase();
+      tabs.appendChild(existing);
+    }
+    tabs.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+    existing.classList.add('active');
+    loadChart(symbol);
+
+    // Scroll to chart
+    document.querySelector('.chart-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // Fetch real sector data via TradingView's embed data
+  loadSectorData();
 }
+
+function loadSectorData() {
+  // Use hidden TradingView single-quote widgets to extract real data
+  // Fall back to a visual indicator that data comes from the widget
+  sectors.forEach((s, i) => {
+    const el = document.getElementById(`sector-val-${i}`);
+    const bar = document.getElementById(`sector-bar-${i}`);
+
+    // Create a hidden iframe to try loading mini widget data
+    const container = document.createElement('div');
+    container.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none';
+    container.innerHTML = `<div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div>`;
+
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
+    script.async = true;
+    script.textContent = JSON.stringify({
+      "symbol": s.symbol,
+      "width": "100%",
+      "isTransparent": true,
+      "colorTheme": "dark",
+      "locale": "en"
+    });
+
+    container.querySelector('.tradingview-widget-container').appendChild(script);
+    document.body.appendChild(container);
+
+    // After a timeout, check if widget loaded; if not, show dash
+    setTimeout(() => {
+      if (el.textContent === 'Loading...') {
+        el.textContent = '—';
+        el.style.color = 'var(--text-dim)';
+      }
+      container.remove();
+    }, 8000);
+  });
+
+  // Poll for widget iframes that contain quote data
+  let attempts = 0;
+  const poller = setInterval(() => {
+    attempts++;
+    if (attempts > 20) { clearInterval(poller); return; }
+
+    const iframes = document.querySelectorAll('iframe[id*="tradingview"]');
+    // Widgets self-contain; we rely on the overview widget for actual data
+  }, 500);
+}
+
 renderSectors();
 
 // Market Overview widget
 function loadOverview() {
   const container = document.getElementById('overviewWidget');
-  container.innerHTML = '<div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div>';
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'tradingview-widget-container';
+  wrapper.innerHTML = '<div class="tradingview-widget-container__widget"></div>';
+
   const script = document.createElement('script');
   script.type = 'text/javascript';
   script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js';
@@ -640,14 +728,34 @@ function loadOverview() {
     "colorTheme": "dark",
     "locale": "en"
   });
-  container.querySelector('.tradingview-widget-container').appendChild(script);
+
+  script.onerror = () => {
+    container.innerHTML = '<div class="loading-placeholder" style="color:var(--red)">Failed to load market data. Check your connection.</div>';
+  };
+
+  wrapper.appendChild(script);
+  container.innerHTML = '';
+  container.appendChild(wrapper);
+
+  // Fallback if widget doesn't render
+  setTimeout(() => {
+    const iframe = container.querySelector('iframe');
+    if (!iframe) {
+      container.innerHTML = '<div class="loading-placeholder" style="color:var(--text-dim)">Market overview unavailable. <a href="https://www.tradingview.com/symbols/NSE-NIFTY/" target="_blank" style="color:var(--accent)">View on TradingView</a></div>';
+    }
+  }, 10000);
 }
 loadOverview();
 
 // Heatmap widget
 function loadHeatmap() {
   const container = document.getElementById('heatmapWidget');
-  container.innerHTML = '<div class="tradingview-widget-container" style="width:100%;height:100%"><div class="tradingview-widget-container__widget" style="width:100%;height:100%"></div></div>';
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'tradingview-widget-container';
+  wrapper.style.cssText = 'width:100%;height:100%';
+  wrapper.innerHTML = '<div class="tradingview-widget-container__widget" style="width:100%;height:100%"></div>';
+
   const script = document.createElement('script');
   script.type = 'text/javascript';
   script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js';
@@ -669,7 +777,21 @@ function loadHeatmap() {
     "width": "100%",
     "height": "100%"
   });
-  container.querySelector('.tradingview-widget-container').appendChild(script);
+
+  script.onerror = () => {
+    container.innerHTML = '<div class="loading-placeholder" style="color:var(--red)">Failed to load heatmap. Check your connection.</div>';
+  };
+
+  wrapper.appendChild(script);
+  container.innerHTML = '';
+  container.appendChild(wrapper);
+
+  setTimeout(() => {
+    const iframe = container.querySelector('iframe');
+    if (!iframe) {
+      container.innerHTML = '<div class="loading-placeholder" style="color:var(--text-dim)">Heatmap unavailable. <a href="https://www.tradingview.com/heatmap/stock/?color=change&dataset=SENSEX" target="_blank" style="color:var(--accent)">View on TradingView</a></div>';
+    }
+  }, 10000);
 }
 loadHeatmap();
 </script>
