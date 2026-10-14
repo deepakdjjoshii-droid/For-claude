@@ -105,9 +105,8 @@
     50% { opacity: 0.4; }
   }
 
-  @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
 
   .loading-placeholder {
@@ -131,36 +130,11 @@
     animation: spin 0.8s linear infinite;
   }
 
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
   .ticker-tape {
     width: 100%;
     height: 46px;
     overflow: hidden;
     border-bottom: 1px solid var(--border);
-    position: relative;
-  }
-
-  .ticker-fallback {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    padding: 0 16px;
-    gap: 24px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    font-size: 0.8rem;
-    color: var(--text-dim);
-    animation: fadeIn 0.3s ease;
-  }
-
-  .ticker-fallback span { white-space: nowrap; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
   }
 
   .dashboard {
@@ -185,7 +159,7 @@
     border-radius: 14px;
     border: 1px solid var(--border);
     overflow: hidden;
-    height: 420px;
+    height: 500px;
   }
 
   .chart-tabs {
@@ -241,54 +215,23 @@
 
   .sector-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 8px;
   }
 
   .sector-card {
     background: var(--surface2);
     border-radius: 10px;
-    padding: 14px;
+    padding: 0;
     text-align: center;
     border: 1px solid var(--border);
     cursor: pointer;
     transition: transform 0.2s, border-color 0.2s;
+    overflow: hidden;
+    height: 180px;
   }
 
   .sector-card:active { transform: scale(0.97); }
-  .sector-card:hover { border-color: var(--accent); }
-
-  .sector-name {
-    font-size: 0.75rem;
-    color: var(--text-dim);
-    margin-bottom: 6px;
-    font-weight: 600;
-  }
-
-  .sector-change {
-    font-size: 1.1rem;
-    font-weight: 800;
-  }
-
-  .sector-change.up { color: var(--green); }
-  .sector-change.down { color: var(--red); }
-
-  .sector-bar {
-    height: 4px;
-    border-radius: 2px;
-    margin-top: 8px;
-    background: var(--border);
-    overflow: hidden;
-  }
-
-  .sector-bar-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.8s ease;
-  }
-
-  .sector-bar-fill.up { background: var(--green); }
-  .sector-bar-fill.down { background: var(--red); }
 
   .widget-box {
     background: var(--surface);
@@ -365,28 +308,29 @@
   </div>
 </header>
 
-<!-- TradingView Ticker Tape -->
-<div class="ticker-tape" id="tickerTape">
+<!-- TradingView Ticker Tape — uses BSE symbols which work reliably in embeds -->
+<div class="ticker-tape">
   <div class="tradingview-widget-container">
     <div class="tradingview-widget-container__widget"></div>
     <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
     {
       "symbols": [
-        {"proName": "NSE:NIFTY", "title": "NIFTY 50"},
         {"proName": "BSE:SENSEX", "title": "SENSEX"},
-        {"proName": "NSE:BANKNIFTY", "title": "BANK NIFTY"},
-        {"proName": "NSE:RELIANCE", "title": "RELIANCE"},
-        {"proName": "NSE:TCS", "title": "TCS"},
-        {"proName": "NSE:HDFCBANK", "title": "HDFC BANK"},
-        {"proName": "NSE:INFY", "title": "INFOSYS"},
-        {"proName": "NSE:ICICIBANK", "title": "ICICI BANK"},
-        {"proName": "NSE:SBIN", "title": "SBI"},
-        {"proName": "NSE:BHARTIARTL", "title": "AIRTEL"},
-        {"proName": "NSE:ITC", "title": "ITC"},
-        {"proName": "NSE:TATAMOTORS", "title": "TATA MOTORS"},
-        {"proName": "NSE:WIPRO", "title": "WIPRO"},
-        {"proName": "NSE:AXISBANK", "title": "AXIS BANK"},
-        {"proName": "NSE:ADANIENT", "title": "ADANI ENT"}
+        {"proName": "BSE:SENSEX50", "title": "SENSEX 50"},
+        {"proName": "BSE:RELIANCE", "title": "RELIANCE"},
+        {"proName": "BSE:TCS", "title": "TCS"},
+        {"proName": "BSE:HDFCBANK", "title": "HDFC BANK"},
+        {"proName": "BSE:INFY", "title": "INFOSYS"},
+        {"proName": "BSE:ICICIBANK", "title": "ICICI BANK"},
+        {"proName": "BSE:SBIN", "title": "SBI"},
+        {"proName": "BSE:BHARTIARTL", "title": "AIRTEL"},
+        {"proName": "BSE:ITC", "title": "ITC"},
+        {"proName": "BSE:TATAMOTORS", "title": "TATA MOTORS"},
+        {"proName": "BSE:WIPRO", "title": "WIPRO"},
+        {"proName": "BSE:AXISBANK", "title": "AXIS BANK"},
+        {"proName": "BSE:ADANIENT", "title": "ADANI ENT"},
+        {"proName": "BSE:LT", "title": "L&T"},
+        {"proName": "BSE:KOTAKBANK", "title": "KOTAK BANK"}
       ],
       "showSymbolLogo": true,
       "isTransparent": true,
@@ -400,18 +344,18 @@
 
 <div class="dashboard">
 
-  <!-- Main Chart -->
+  <!-- Main Chart — uses symbol-overview widget which reliably supports BSE symbols -->
   <div>
     <div class="section-title">Live Chart</div>
     <div class="chart-container">
       <div class="chart-tabs" id="chartTabs">
-        <button class="chart-tab active" data-symbol="NSE:NIFTY">NIFTY 50</button>
-        <button class="chart-tab" data-symbol="BSE:SENSEX">SENSEX</button>
-        <button class="chart-tab" data-symbol="NSE:BANKNIFTY">BANK NIFTY</button>
-        <button class="chart-tab" data-symbol="NSE:RELIANCE">RELIANCE</button>
-        <button class="chart-tab" data-symbol="NSE:TCS">TCS</button>
-        <button class="chart-tab" data-symbol="NSE:HDFCBANK">HDFC BANK</button>
-        <button class="chart-tab" data-symbol="NSE:INFY">INFOSYS</button>
+        <button class="chart-tab active" data-symbol="BSE:SENSEX">SENSEX</button>
+        <button class="chart-tab" data-symbol="BSE:SENSEX50">SENSEX 50</button>
+        <button class="chart-tab" data-symbol="BSE:RELIANCE">RELIANCE</button>
+        <button class="chart-tab" data-symbol="BSE:TCS">TCS</button>
+        <button class="chart-tab" data-symbol="BSE:HDFCBANK">HDFC BANK</button>
+        <button class="chart-tab" data-symbol="BSE:INFY">INFOSYS</button>
+        <button class="chart-tab" data-symbol="BSE:SBIN">SBI</button>
       </div>
       <div class="chart-frame" id="chartFrame">
         <div class="loading-placeholder">
@@ -422,11 +366,11 @@
     </div>
   </div>
 
-  <!-- Sector Performance -->
+  <!-- Sector Performance — mini symbol overview widgets with real live data -->
   <div>
     <div class="sector-section-header">
-      <div class="section-title" style="margin-bottom:0">Sector Performance</div>
-      <div class="sector-note">Tap a sector to chart it</div>
+      <div class="section-title" style="margin-bottom:0">Stocks</div>
+      <div class="sector-note">Tap to chart</div>
     </div>
     <div class="sector-grid" id="sectorGrid"></div>
   </div>
@@ -444,7 +388,7 @@
 
   <!-- Heatmap -->
   <div>
-    <div class="section-title">Market Heatmap — Nifty 50</div>
+    <div class="section-title">Market Heatmap</div>
     <div class="widget-box heatmap-container" id="heatmapWidget">
       <div class="loading-placeholder">
         <div class="loading-spinner"></div>
@@ -460,7 +404,7 @@
 </div>
 
 <script>
-// Market status check (IST: pre-open 9:00-9:15, open 9:15-15:30, Mon-Fri)
+// Market status (IST: pre-open 9:00-9:15, open 9:15-15:30, Mon-Fri)
 function updateMarketStatus() {
   const now = new Date();
   const istStr = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
@@ -487,21 +431,7 @@ function updateMarketStatus() {
 updateMarketStatus();
 setInterval(updateMarketStatus, 30000);
 
-// Ticker tape fallback
-setTimeout(() => {
-  const tape = document.getElementById('tickerTape');
-  const iframe = tape.querySelector('iframe');
-  if (!iframe) {
-    const fb = document.createElement('div');
-    fb.className = 'ticker-fallback';
-    fb.innerHTML = '<span>NIFTY 50</span><span>SENSEX</span><span>BANK NIFTY</span><span>RELIANCE</span><span>TCS</span><span>HDFC BANK</span><span>INFOSYS</span><span>SBI</span><span style="color:var(--text-dim)">Live ticker loading...</span>';
-    tape.appendChild(fb);
-  }
-}, 4000);
-
-// Chart widget with cleanup
-let currentChartWidget = null;
-
+// Main chart — uses symbol-overview widget which works with BSE symbols
 function loadChart(symbol) {
   const container = document.getElementById('chartFrame');
   container.innerHTML = '<div class="loading-placeholder"><div class="loading-spinner"></div>Loading chart...</div>';
@@ -511,26 +441,39 @@ function loadChart(symbol) {
     const wrapper = document.createElement('div');
     wrapper.className = 'tv-widget-container';
     wrapper.innerHTML = '<div class="tradingview-widget-container__widget"></div>';
+
     const script = document.createElement('script');
     script.type = 'text/javascript';
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js';
     script.async = true;
     script.textContent = JSON.stringify({
-      "autosize": true,
-      "symbol": symbol,
-      "interval": "5",
-      "timezone": "Asia/Kolkata",
-      "theme": "dark",
-      "style": "1",
+      "symbols": [[symbol.split(':')[1] || symbol, symbol + "|1M"]],
+      "chartOnly": false,
+      "width": "100%",
+      "height": "100%",
       "locale": "en",
+      "colorTheme": "dark",
+      "autosize": true,
+      "showVolume": true,
+      "showMA": true,
+      "hideDateRanges": false,
+      "hideMarketStatus": false,
+      "hideSymbolLogo": false,
+      "scalePosition": "right",
+      "scaleMode": "Normal",
+      "fontFamily": "-apple-system, BlinkMacSystemFont, sans-serif",
+      "fontSize": "10",
+      "noTimeScale": false,
+      "valuesTracking": "1",
+      "changeMode": "price-and-percent",
+      "chartType": "area",
+      "maLineColor": "#536dfe",
+      "maLineWidth": 1,
+      "maLength": 14,
       "backgroundColor": "#151820",
-      "gridColor": "#1c1f2e",
-      "allow_symbol_change": true,
-      "support_host": "https://www.tradingview.com",
-      "hide_top_toolbar": false,
-      "hide_legend": false,
-      "save_image": false,
-      "studies": ["RSI@tv-basicstudies", "MAExp@tv-basicstudies"]
+      "lineWidth": 2,
+      "lineType": 0,
+      "dateRanges": ["1d|5", "1m|1D", "3m|1D", "12m|1W", "60m|1W", "all|1M"]
     });
 
     script.onerror = () => {
@@ -551,46 +494,59 @@ document.getElementById('chartTabs').addEventListener('click', (e) => {
   loadChart(tab.dataset.symbol);
 });
 
-loadChart('NSE:NIFTY');
+loadChart('BSE:SENSEX');
 
-// Sector performance using TradingView mini symbol overview widgets
-const sectors = [
-  { name: 'IT', symbol: 'NSE:CNXIT', chartSymbol: 'NSE:CNXIT' },
-  { name: 'Banking', symbol: 'NSE:BANKNIFTY', chartSymbol: 'NSE:BANKNIFTY' },
-  { name: 'Pharma', symbol: 'NSE:CNXPHARMA', chartSymbol: 'NSE:CNXPHARMA' },
-  { name: 'Auto', symbol: 'NSE:CNXAUTO', chartSymbol: 'NSE:CNXAUTO' },
-  { name: 'FMCG', symbol: 'NSE:CNXFMCG', chartSymbol: 'NSE:CNXFMCG' },
-  { name: 'Metal', symbol: 'NSE:CNXMETAL', chartSymbol: 'NSE:CNXMETAL' },
-  { name: 'Energy', symbol: 'NSE:CNXENERGY', chartSymbol: 'NSE:CNXENERGY' },
-  { name: 'Realty', symbol: 'NSE:CNXREALTY', chartSymbol: 'NSE:CNXREALTY' },
-  { name: 'Media', symbol: 'NSE:CNXMEDIA', chartSymbol: 'NSE:CNXMEDIA' },
-  { name: 'PSU Bank', symbol: 'NSE:CNXPSUBANK', chartSymbol: 'NSE:CNXPSUBANK' },
-  { name: 'Fin Services', symbol: 'NSE:CNXFINANCE', chartSymbol: 'NSE:CNXFINANCE' },
-  { name: 'Infra', symbol: 'NSE:CNXINFRA', chartSymbol: 'NSE:CNXINFRA' },
+// Stock cards — using mini symbol overview widgets for real live data
+const stocks = [
+  { name: 'Reliance', symbol: 'BSE:RELIANCE' },
+  { name: 'TCS', symbol: 'BSE:TCS' },
+  { name: 'HDFC Bank', symbol: 'BSE:HDFCBANK' },
+  { name: 'Infosys', symbol: 'BSE:INFY' },
+  { name: 'ICICI Bank', symbol: 'BSE:ICICIBANK' },
+  { name: 'SBI', symbol: 'BSE:SBIN' },
+  { name: 'Airtel', symbol: 'BSE:BHARTIARTL' },
+  { name: 'ITC', symbol: 'BSE:ITC' },
+  { name: 'L&T', symbol: 'BSE:LT' },
+  { name: 'Tata Motors', symbol: 'BSE:TATAMOTORS' },
+  { name: 'Axis Bank', symbol: 'BSE:AXISBANK' },
+  { name: 'Kotak Bank', symbol: 'BSE:KOTAKBANK' },
 ];
 
-function renderSectors() {
+function renderStockCards() {
   const grid = document.getElementById('sectorGrid');
-  grid.innerHTML = sectors.map((s, i) => {
+  grid.innerHTML = stocks.map(s => {
+    const id = 'stock-' + s.symbol.replace(/[^a-zA-Z]/g, '');
     return `
-      <div class="sector-card" data-symbol="${s.chartSymbol}" data-name="${s.name}">
-        <div class="sector-name">${s.name}</div>
-        <div class="sector-change" id="sector-val-${i}" style="color:var(--text-dim);font-size:0.85rem">Loading...</div>
-        <div class="sector-bar">
-          <div class="sector-bar-fill" id="sector-bar-${i}" style="width:0%"></div>
+      <div class="sector-card" data-symbol="${s.symbol}" data-name="${s.name}" id="${id}">
+        <div class="tradingview-widget-container" style="width:100%;height:100%">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "${s.symbol}",
+            "width": "100%",
+            "height": "100%",
+            "locale": "en",
+            "dateRange": "1D",
+            "colorTheme": "dark",
+            "isTransparent": true,
+            "autosize": true,
+            "largeChartUrl": "",
+            "noTimeScale": true,
+            "chartOnly": false
+          }
+          <\/script>
         </div>
       </div>
     `;
   }).join('');
 
-  // Tap sector to load its chart
+  // Tap stock card to load its chart
   grid.addEventListener('click', (e) => {
     const card = e.target.closest('.sector-card');
     if (!card) return;
     const symbol = card.dataset.symbol;
     const name = card.dataset.name;
 
-    // Add a custom tab or switch to it
     const tabs = document.getElementById('chartTabs');
     let existing = tabs.querySelector(`[data-symbol="${symbol}"]`);
     if (!existing) {
@@ -603,69 +559,14 @@ function renderSectors() {
     tabs.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
     existing.classList.add('active');
     loadChart(symbol);
-
-    // Scroll to chart
     document.querySelector('.chart-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
-
-  // Fetch real sector data via TradingView's embed data
-  loadSectorData();
 }
+renderStockCards();
 
-function loadSectorData() {
-  // Use hidden TradingView single-quote widgets to extract real data
-  // Fall back to a visual indicator that data comes from the widget
-  sectors.forEach((s, i) => {
-    const el = document.getElementById(`sector-val-${i}`);
-    const bar = document.getElementById(`sector-bar-${i}`);
-
-    // Create a hidden iframe to try loading mini widget data
-    const container = document.createElement('div');
-    container.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none';
-    container.innerHTML = `<div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div>`;
-
-    const script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
-    script.async = true;
-    script.textContent = JSON.stringify({
-      "symbol": s.symbol,
-      "width": "100%",
-      "isTransparent": true,
-      "colorTheme": "dark",
-      "locale": "en"
-    });
-
-    container.querySelector('.tradingview-widget-container').appendChild(script);
-    document.body.appendChild(container);
-
-    // After a timeout, check if widget loaded; if not, show dash
-    setTimeout(() => {
-      if (el.textContent === 'Loading...') {
-        el.textContent = '—';
-        el.style.color = 'var(--text-dim)';
-      }
-      container.remove();
-    }, 8000);
-  });
-
-  // Poll for widget iframes that contain quote data
-  let attempts = 0;
-  const poller = setInterval(() => {
-    attempts++;
-    if (attempts > 20) { clearInterval(poller); return; }
-
-    const iframes = document.querySelectorAll('iframe[id*="tradingview"]');
-    // Widgets self-contain; we rely on the overview widget for actual data
-  }, 500);
-}
-
-renderSectors();
-
-// Market Overview widget
+// Market Overview widget — BSE symbols
 function loadOverview() {
   const container = document.getElementById('overviewWidget');
-
   const wrapper = document.createElement('div');
   wrapper.className = 'tradingview-widget-container';
   wrapper.innerHTML = '<div class="tradingview-widget-container__widget"></div>';
@@ -681,45 +582,43 @@ function loadOverview() {
       {
         "name": "Indices",
         "symbols": [
-          { "name": "NSE:NIFTY", "displayName": "NIFTY 50" },
           { "name": "BSE:SENSEX", "displayName": "SENSEX" },
-          { "name": "NSE:BANKNIFTY", "displayName": "BANK NIFTY" },
-          { "name": "NSE:CNXMIDCAP", "displayName": "NIFTY MIDCAP" }
+          { "name": "BSE:SENSEX50", "displayName": "SENSEX 50" }
         ]
       },
       {
         "name": "Large Cap",
         "symbols": [
-          { "name": "NSE:RELIANCE", "displayName": "Reliance" },
-          { "name": "NSE:TCS", "displayName": "TCS" },
-          { "name": "NSE:HDFCBANK", "displayName": "HDFC Bank" },
-          { "name": "NSE:INFY", "displayName": "Infosys" },
-          { "name": "NSE:ICICIBANK", "displayName": "ICICI Bank" },
-          { "name": "NSE:BHARTIARTL", "displayName": "Bharti Airtel" },
-          { "name": "NSE:SBIN", "displayName": "SBI" },
-          { "name": "NSE:ITC", "displayName": "ITC" },
-          { "name": "NSE:LT", "displayName": "L&T" },
-          { "name": "NSE:TATAMOTORS", "displayName": "Tata Motors" }
+          { "name": "BSE:RELIANCE", "displayName": "Reliance" },
+          { "name": "BSE:TCS", "displayName": "TCS" },
+          { "name": "BSE:HDFCBANK", "displayName": "HDFC Bank" },
+          { "name": "BSE:INFY", "displayName": "Infosys" },
+          { "name": "BSE:ICICIBANK", "displayName": "ICICI Bank" },
+          { "name": "BSE:BHARTIARTL", "displayName": "Bharti Airtel" },
+          { "name": "BSE:SBIN", "displayName": "SBI" },
+          { "name": "BSE:ITC", "displayName": "ITC" },
+          { "name": "BSE:LT", "displayName": "L&T" },
+          { "name": "BSE:TATAMOTORS", "displayName": "Tata Motors" }
         ]
       },
       {
         "name": "Banking",
         "symbols": [
-          { "name": "NSE:HDFCBANK", "displayName": "HDFC Bank" },
-          { "name": "NSE:ICICIBANK", "displayName": "ICICI Bank" },
-          { "name": "NSE:SBIN", "displayName": "SBI" },
-          { "name": "NSE:AXISBANK", "displayName": "Axis Bank" },
-          { "name": "NSE:KOTAKBANK", "displayName": "Kotak Bank" }
+          { "name": "BSE:HDFCBANK", "displayName": "HDFC Bank" },
+          { "name": "BSE:ICICIBANK", "displayName": "ICICI Bank" },
+          { "name": "BSE:SBIN", "displayName": "SBI" },
+          { "name": "BSE:AXISBANK", "displayName": "Axis Bank" },
+          { "name": "BSE:KOTAKBANK", "displayName": "Kotak Bank" }
         ]
       },
       {
         "name": "IT",
         "symbols": [
-          { "name": "NSE:TCS", "displayName": "TCS" },
-          { "name": "NSE:INFY", "displayName": "Infosys" },
-          { "name": "NSE:WIPRO", "displayName": "Wipro" },
-          { "name": "NSE:HCLTECH", "displayName": "HCL Tech" },
-          { "name": "NSE:TECHM", "displayName": "Tech Mahindra" }
+          { "name": "BSE:TCS", "displayName": "TCS" },
+          { "name": "BSE:INFY", "displayName": "Infosys" },
+          { "name": "BSE:WIPRO", "displayName": "Wipro" },
+          { "name": "BSE:HCLTECH", "displayName": "HCL Tech" },
+          { "name": "BSE:TECHM", "displayName": "Tech Mahindra" }
         ]
       }
     ],
@@ -730,18 +629,16 @@ function loadOverview() {
   });
 
   script.onerror = () => {
-    container.innerHTML = '<div class="loading-placeholder" style="color:var(--red)">Failed to load market data. Check your connection.</div>';
+    container.innerHTML = '<div class="loading-placeholder" style="color:var(--red)">Failed to load. <a href="https://www.tradingview.com/markets/stocks-india/" target="_blank" style="color:var(--accent)">View on TradingView</a></div>';
   };
 
   wrapper.appendChild(script);
   container.innerHTML = '';
   container.appendChild(wrapper);
 
-  // Fallback if widget doesn't render
   setTimeout(() => {
-    const iframe = container.querySelector('iframe');
-    if (!iframe) {
-      container.innerHTML = '<div class="loading-placeholder" style="color:var(--text-dim)">Market overview unavailable. <a href="https://www.tradingview.com/symbols/NSE-NIFTY/" target="_blank" style="color:var(--accent)">View on TradingView</a></div>';
+    if (!container.querySelector('iframe')) {
+      container.innerHTML = '<div class="loading-placeholder" style="color:var(--text-dim)">Overview unavailable. <a href="https://www.tradingview.com/markets/stocks-india/" target="_blank" style="color:var(--accent)">View on TradingView</a></div>';
     }
   }, 10000);
 }
@@ -750,7 +647,6 @@ loadOverview();
 // Heatmap widget
 function loadHeatmap() {
   const container = document.getElementById('heatmapWidget');
-
   const wrapper = document.createElement('div');
   wrapper.className = 'tradingview-widget-container';
   wrapper.style.cssText = 'width:100%;height:100%';
@@ -779,7 +675,7 @@ function loadHeatmap() {
   });
 
   script.onerror = () => {
-    container.innerHTML = '<div class="loading-placeholder" style="color:var(--red)">Failed to load heatmap. Check your connection.</div>';
+    container.innerHTML = '<div class="loading-placeholder" style="color:var(--red)">Failed to load. <a href="https://www.tradingview.com/heatmap/stock/?color=change&dataset=SENSEX" target="_blank" style="color:var(--accent)">View on TradingView</a></div>';
   };
 
   wrapper.appendChild(script);
@@ -787,8 +683,7 @@ function loadHeatmap() {
   container.appendChild(wrapper);
 
   setTimeout(() => {
-    const iframe = container.querySelector('iframe');
-    if (!iframe) {
+    if (!container.querySelector('iframe')) {
       container.innerHTML = '<div class="loading-placeholder" style="color:var(--text-dim)">Heatmap unavailable. <a href="https://www.tradingview.com/heatmap/stock/?color=change&dataset=SENSEX" target="_blank" style="color:var(--accent)">View on TradingView</a></div>';
     }
   }, 10000);
